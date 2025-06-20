@@ -3,7 +3,7 @@ use crate::core::parser::Vault;
 use rand::prelude::*;
 
 use aes_gcm::aead::{Aead, KeyInit};
-use aes_gcm::{Aes256Gcm, Key, Nonce}; // AES-GCM
+use aes_gcm::{Aes256Gcm, Key, Nonce};
 use anyhow::Result;
 use base64::{Engine as _, engine::general_purpose};
 use pbkdf2::pbkdf2_hmac;
