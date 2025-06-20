@@ -7,6 +7,8 @@ use anyhow::{Context, Result};
 
 use clap::{Parser, Subcommand};
 
+use zeroize::Zeroize;
+
 use cliclack::{intro, outro, password, spinner};
 
 /// mnemonic-vault: A cryptographic vault for your files that can only be accessed with your passphrase.
@@ -52,7 +54,7 @@ fn lock_file(target: &str, output: &Option<String>) -> Result<()> {
     }
 
     // Request authentication phrase and validate password strength
-    let pass = password("Provide a strength phrase")
+    let mut pass = password("Provide a strength phrase")
         .validate_on_enter(core::validation::validate_passphrase)
         .interact()?;
 
@@ -84,6 +86,10 @@ fn lock_file(target: &str, output: &Option<String>) -> Result<()> {
         .with_context(|| format!("Error saving encrypted file: {}", output_path))?;
 
     outro(format!("File saved as: {}", output_path))?;
+
+    // Clear sensitive data from the memory
+    pass.zeroize();
+
     Ok(())
 }
 
@@ -105,7 +111,7 @@ fn unlock_file(target: &str, output: &Option<String>) -> Result<()> {
         serde_json::from_str(&json).with_context(|| format!("Failed to parse encrypted file"))?;
 
     // Ask password (hidden input)
-    let pass = password("Provide your passphrase").interact()?;
+    let mut pass = password("Provide your passphrase").interact()?;
 
     // Decrypt content
     let sp = spinner();
@@ -130,6 +136,10 @@ fn unlock_file(target: &str, output: &Option<String>) -> Result<()> {
         .with_context(|| format!("Error saving decrypted file: {}", output_path))?;
 
     outro(format!("File decrypted and saved as: {}", output_path))?;
+
+    // Clear sensitive data from the memory
+    pass.zeroize();
+
     Ok(())
 }
 
